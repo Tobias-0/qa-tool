@@ -1,0 +1,15 @@
+{
+  "anthropic_api_key": "",
+  "features": [
+    {
+      "name": "",
+      "assignee_name": "",
+      "assignee_id": "",
+      "board_id": ""
+    }
+  ],
+  "fizzy_account_slug": "",
+  "fizzy_base_url": "",
+  "fizzy_board_id": "",
+  "fizzy_token": ""
+}

@@ -1,0 +1,2437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QA → Fizzy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+  <!-- Font Awesome 6 (free). For FA Pro, replace this link with your kit: <script src="https://kit.fontawesome.com/XXXX.js" crossorigin="anonymous"></script> -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      /* ── Design tokens ── */
+
+      /* Neutral */
+      --color-neutral-100: #ffffff;
+      --color-neutral-200: #ebebf2;
+      --color-neutral-300: #c0c0d1;
+      --color-neutral-400: #9494a8;
+      --color-neutral-500: #4c4c5c;
+      --color-neutral-600: #282834;
+      --color-neutral-700: #1e1e27;
+      --color-neutral-800: #14141a;
+      --color-neutral-900: #0E0E11;
+      --color-bedrock: #07070A;
+
+      /* Primary (yellow) */
+      --color-primary-300: #fde48b;
+      --color-primary-500: #fcd23e;
+      --color-primary-900: #3c2f04;
+
+      /* Neon (focus) */
+      --color-neon-500: #5f5dfe;
+
+      /* Red (error/bug) */
+      --color-red-400: #ff8c9c;
+      --color-red-900: #380b10;
+      --color-red-800: #591d24;
+
+      /* Emerald (success) */
+      --color-emerald-400: #94f094;
+      --color-emerald-900: #0d2b0d;
+      --color-emerald-800: #274027;
+
+      /* Neon/visual */
+      --color-neon-300: #afaeff;
+      --color-neon-900: #14134d;
+
+      /* ── Semantic aliases ── */
+
+      /* Backgrounds */
+      --background-color-ondark-base:    var(--color-neutral-900);
+      --background-color-ondark-bedrock: var(--color-bedrock);
+      --background-color-ondark-low:    var(--color-neutral-800);
+      --background-color-ondark-medium: var(--color-neutral-700);
+      --background-color-ondark-high:   var(--color-neutral-600);
+
+      /* Text */
+      --text-color-ondark-primary:   var(--color-neutral-100);
+      --text-color-ondark-secondary: var(--color-neutral-300);
+      --text-color-ondark-subtle:    var(--color-neutral-400);
+      --text-color-onlight-primary:  var(--color-neutral-900);
+
+      /* Borders */
+      --border-color-ondark-base:   var(--color-neutral-500);
+      --border-color-ondark-subtle: var(--color-neutral-600);
+      --border-color-ondark-active: var(--color-neutral-300);
+      --border-color-ondark-focused: var(--color-neon-500);
+
+      /* Action (primary yellow) */
+      --color-action-ondark-base:     var(--color-primary-500);
+      --color-action-ondark-active:   var(--color-primary-300);
+      --color-action-ondark-subtle:   var(--color-primary-900);
+      --color-action-ondark-inactive: var(--color-neutral-500);
+
+      /* Alert (red) */
+      --color-alert-ondark-base: var(--color-red-400);
+      --color-alert-ondark-subtle: var(--color-red-900);
+
+      /* Positive (green) */
+      --color-positive-ondark-base: var(--color-emerald-400);
+      --color-positive-ondark-subtle: var(--color-emerald-900);
+
+      /* ── Local aliases for brevity ── */
+      --bg:          var(--background-color-ondark-base);
+      --bg-bedrock:  var(--background-color-ondark-bedrock);
+      --surface:      var(--background-color-ondark-low);
+      --surface-mid:  var(--background-color-ondark-medium);
+      --surface-high: var(--background-color-ondark-high);
+      --text:         var(--text-color-ondark-primary);
+      --text-secondary: var(--text-color-ondark-secondary);
+      --muted:        var(--text-color-ondark-subtle);
+      --border:       var(--border-color-ondark-base);
+      --border-subtle: var(--border-color-ondark-subtle);
+      --focus:        var(--border-color-ondark-focused);
+      --bug:          var(--color-alert-ondark-base);
+      --bug-bg:       var(--color-alert-ondark-subtle);
+      --success:      var(--color-positive-ondark-base);
+      --success-bg:   var(--color-positive-ondark-subtle);
+      --visual:       var(--color-neon-300);
+      --visual-bg:    var(--color-neon-900);
+      --copy:         var(--color-action-ondark-base);
+      --copy-bg:      var(--color-action-ondark-subtle);
+
+      /* Radius */
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-xs: 6px;
+
+      /* Shadows */
+      --shadow: 0px 15px 12px rgba(0,0,0,.08), 0px 8px 5px rgba(0,0,0,.04);
+
+      /* Modal overlay (shared with #modal-backdrop / panels) */
+      --modal-fade-duration: 0.3s;
+      --modal-fade-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      background-color: var(--bg-bedrock);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath d='M-1,11%20l2,2%20M0,0%20l12,12%20M11,-1%20l2,2' fill='none' stroke='rgba(40%2C40%2C52%2C0.4)' stroke-width='1'/%3E%3C/svg%3E");
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      transition: all .15s;
+      outline: none;
+    }
+    .btn-primary {
+      background: var(--color-action-ondark-base);
+      color: var(--text-color-onlight-primary);
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--color-action-ondark-active); }
+    .btn-primary:focus-visible { box-shadow: 0 0 0 2px var(--border-color-ondark-focused); }
+    .btn-primary:disabled { background: var(--color-action-ondark-inactive); color: var(--text-color-onlight-primary); opacity: .4; cursor: not-allowed; }
+    .btn-ghost {
+      background: var(--background-color-ondark-medium);
+      color: var(--text-color-ondark-primary);
+      border: none;
+    }
+    .btn-ghost:hover:not(:disabled) { background: var(--surface-high); }
+    .btn-ghost:focus-visible { box-shadow: 0 0 0 3px rgba(95,93,254,.4); }
+    .btn-danger { background: var(--bug-bg); color: var(--bug); border: 1px solid #591d24; }
+    .btn-danger:hover { background: #591d24; }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+    /* ── Main Layout ── */
+    main { /* layout handled per-view */ }
+
+    #review-view {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 24px 140px;
+    }
+
+    /* ── Upload view — centered ── */
+    #upload-view {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 24px 120px;
+      position: relative;
+      z-index: 1;
+    }
+    /* Fixed floating toolbars — upload feature bar + review actions */
+    #feature-select-bar,
+    #review-action-bar {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 50;
+      width: max-content;
+      max-width: calc(100vw - 48px);
+      opacity: 1;
+      transition: opacity 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    #feature-select-bar.form-group,
+    #review-action-bar.form-group {
+      margin-bottom: 0;
+    }
+    #review-action-bar .feature-select-bar__inner {
+      width: min(480px, calc(100vw - 48px));
+    }
+    /* Review CTA always visible (no staggered fade like upload process reveal) */
+    #review-action-bar .feature-select-bar__cta-inner {
+      opacity: 1;
+      transition-delay: 0s;
+    }
+    #upload-view:has(#audio-zone.audio-processing) #feature-select-bar {
+      opacity: 0;
+      pointer-events: none;
+    }
+    /* Toolbar + CTA motion: shared duration/easing for expand/collapse */
+    .feature-select-bar__inner {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      padding: 16px;
+      background-color: var(--background-color-ondark-low);
+      border: 1px solid var(--border-color-ondark-subtle);
+      border-radius: var(--radius);
+      box-sizing: border-box;
+      transition: gap 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .feature-select-bar__inner--cta-visible {
+      gap: 16px;
+    }
+    .feature-select-bar__top {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding-bottom: 0;
+      border-bottom: 1px solid transparent;
+      transition:
+        padding-bottom 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+        border-bottom-color 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+        justify-content 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .feature-select-bar__inner--cta-visible .feature-select-bar__top {
+      justify-content: space-between;
+      padding-bottom: 16px;
+      border-bottom-color: var(--border-subtle);
+    }
+    .feature-select-bar__cluster {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding-right: 16px;
+      border-right: 1px solid var(--border-subtle);
+      min-width: 0;
+    }
+    /* Process CTA: inner fades after open (stagger); on close, JS collapses toolbar partway through fade (overlap) */
+    .feature-select-bar__cta {
+      max-height: 0;
+      overflow: hidden;
+      pointer-events: none;
+      transition: max-height 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .feature-select-bar__cta--visible {
+      max-height: 72px;
+      pointer-events: auto;
+      transition: max-height 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .feature-select-bar__cta--visible.feature-select-bar__cta--hiding {
+      pointer-events: none;
+    }
+    .feature-select-bar__cta-inner {
+      opacity: 0;
+      transition: opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .feature-select-bar__cta--visible .feature-select-bar__cta-inner {
+      opacity: 1;
+      transition-delay: 0.22s;
+    }
+    .feature-select-bar__cta--visible.feature-select-bar__cta--hiding .feature-select-bar__cta-inner {
+      opacity: 0;
+      transition: opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+      transition-delay: 0s;
+    }
+    .feature-select-field {
+      position: relative;
+      width: 320px;
+      max-width: min(320px, calc(100vw - 200px));
+      flex-shrink: 1;
+    }
+    .feature-select-field__native {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .feature-select-field__trigger,
+    .feature-select-field__input {
+      display: block;
+      width: 100%;
+      margin: 0;
+      padding: 10px 16px;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 24px;
+      background: var(--surface-mid);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      outline: none;
+      transition: border-color .15s, background .15s, color .15s;
+    }
+    .feature-select-field__trigger {
+      padding-right: 40px;
+      color: var(--muted);
+      cursor: pointer;
+      text-align: left;
+    }
+    .feature-select-field__trigger:hover {
+      background: var(--surface-high);
+    }
+    .feature-select-field__trigger-label {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .feature-select-field__input {
+      cursor: text;
+      color: var(--text-color-ondark-primary);
+    }
+    .feature-select-field__input::placeholder {
+      color: var(--muted);
+    }
+    .feature-select-field__input:-webkit-autofill,
+    .feature-select-field__input:-webkit-autofill:hover,
+    .feature-select-field__input:-webkit-autofill:focus,
+    .feature-select-field__input:-webkit-autofill:active {
+      -webkit-text-fill-color: var(--text-color-ondark-primary) !important;
+    }
+    .feature-select-field--has-value .feature-select-field__trigger {
+      color: var(--text);
+    }
+    .feature-select-field__trigger:focus-visible,
+    .feature-select-field__input:focus-visible {
+      border-color: var(--focus);
+      box-shadow: 0 0 0 2px rgba(95, 93, 254, 0.35);
+    }
+    .feature-select-field__input:focus,
+    .feature-select-field__input:focus-visible,
+    .feature-select-field__input:active {
+      color: var(--text-color-ondark-primary);
+    }
+    .feature-select-field__dropdown {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 100%;
+      margin-bottom: 8px;
+      max-height: min(280px, 45vh);
+      overflow-y: auto;
+      overflow-x: hidden;
+      z-index: 60;
+      padding: 4px 0;
+      background: var(--background-color-ondark-low);
+      border: 1px solid var(--border-color-ondark-subtle);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow);
+    }
+    .feature-select-field__dropdown[hidden] {
+      display: none !important;
+    }
+    .feature-select-field__option {
+      padding: 12px 16px;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 24px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: background .12s, color .12s;
+    }
+    .feature-select-field__option:hover,
+    .feature-select-field__option[aria-selected="true"] {
+      background: var(--surface-mid);
+      color: var(--text);
+    }
+    .feature-select-field--open .feature-select-field__trigger {
+      color: var(--text);
+    }
+    .feature-select-field--open .feature-select-field__chevron {
+      color: var(--text);
+    }
+    .feature-select-field--open .feature-select-field__chevron {
+      transform: translateY(-50%) rotate(180deg);
+    }
+    .feature-select-field--panel {
+      width: 100%;
+      max-width: none;
+    }
+    .feature-select-field__chevron {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      color: var(--text-color-ondark-secondary);
+      transition: transform 0.2s ease;
+    }
+    .feature-select-field__chevron .fa-solid {
+      font-size: 16px;
+      line-height: 1;
+      display: block;
+    }
+    .feature-select-icon-btn {
+      flex-shrink: 0;
+      width: 48px;
+      height: 48px;
+      margin: 0;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface-mid);
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      cursor: pointer;
+      outline: none;
+      transition: background .15s, border-color .15s, color .15s;
+    }
+    .feature-select-icon-btn:hover:not(:disabled) {
+      background: var(--surface-high);
+    }
+    .feature-select-icon-btn:focus-visible {
+      border-color: var(--focus);
+      box-shadow: 0 0 0 2px rgba(95, 93, 254, 0.35);
+    }
+    .feature-select-icon-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .feature-select-icon-btn:disabled:hover {
+      background: var(--surface-mid);
+      border-color: transparent;
+    }
+    .feature-select-icon-btn .fa-solid {
+      font-size: 16px;
+      line-height: 1;
+      color: var(--text-color-ondark-secondary);
+    }
+    @media (max-width: 560px) {
+      .feature-select-bar__inner {
+        min-width: 0;
+      }
+      .feature-select-bar__top {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .feature-select-bar__cluster {
+        border-right: none;
+        padding-right: 0;
+        width: 100%;
+        justify-content: center;
+      }
+      .feature-select-field {
+        width: 100%;
+        max-width: none;
+      }
+    }
+    #upload-card-wrapper {
+      width: 80vw;
+      max-width: 800px;
+    }
+    /* Upload session: bedrock panel (same token as page bedrock; hides body grid inside bounds) */
+    #upload-card {
+      background-color: var(--background-color-ondark-base);
+      border: none;
+      border-image: none;
+      box-shadow: none;
+      padding: 0;
+      border-radius: 0px;
+      box-sizing: border-box;
+      width: 100%;
+      margin-left: 0;
+      transition: width 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+        margin-left 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    /* Drag-over width grows the card box (not only a child), so alignment lines match; child overflow does not widen getBoundingClientRect on #upload-card */
+    #upload-card:has(#audio-zone.drag-over),
+    #upload-card:has(#audio-zone:hover:not(.audio-has-file)),
+    #upload-card:has(#audio-zone.audio-has-file) {
+      width: calc(100% + 16px);
+      margin-left: -8px;
+    }
+
+    /* ── Alignment lines ── */
+    /* Inside #upload-view: above upload card, below #feature-select-bar (50) and modals (100). */
+    #alignment-lines {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 40;
+    }
+    #alignment-lines div {
+      position: absolute;
+      background: var(--border-subtle);
+    }
+    #line-top, #line-bottom { left: 0; right: 0; height: 1px; }
+    #line-left, #line-right { top: 0; bottom: 0; width: 1px; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .card-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-title {
+      font-weight: 600;
+      font-size: 15px;
+    }
+    .card-body { padding: 40px; }
+
+    /* ── Upload zones ── */
+    .upload-zone {
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-sm);
+      padding: 32px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .2s;
+      position: relative;
+      background: var(--surface-mid);
+    }
+    .upload-zone:not(#audio-zone):hover,
+    .upload-zone:not(#audio-zone).drag-over {
+      border-color: var(--primary);
+      background: var(--surface-mid);
+    }
+    #audio-zone {
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      min-height: 520px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+        min-height 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    #audio-zone:hover:not(.audio-has-file),
+    #audio-zone.drag-over:not(.audio-has-file) {
+      border: none;
+      background: transparent;
+      box-sizing: border-box;
+      min-height: calc(520px + 16px);
+    }
+    #audio-zone.audio-has-file {
+      border: none;
+      background: transparent;
+      box-sizing: border-box;
+      min-height: calc(520px + 16px);
+    }
+    .upload-zone input[type=file] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      border: none;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      box-shadow: none;
+      z-index: 1;
+    }
+    .upload-zone input[type=file]::file-selector-button,
+    .upload-zone input[type=file]::-webkit-file-upload-button {
+      appearance: none;
+      -webkit-appearance: none;
+      margin: 0;
+      padding: 0;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+    .upload-zone input[type=file]:focus,
+    .upload-zone input[type=file]:focus-visible {
+      outline: none;
+      box-shadow: none;
+      background: transparent;
+    }
+    .upload-icon { font-size: 28px; margin-bottom: 8px; }
+    @media (prefers-reduced-motion: reduce) {
+      #audio-zone {
+        transition: none;
+      }
+      #audio-zone.audio-has-file .audio-folder-icon__papers {
+        animation: none;
+        opacity: 1;
+        transform: none;
+      }
+      #audio-zone.audio-has-file .audio-file-row:not(.hidden) {
+        animation: none;
+      }
+      #audio-zone .audio-zone-prompt,
+      #audio-zone.audio-has-file .audio-zone-prompt {
+        transition: none;
+      }
+      #feature-select-bar,
+      #review-action-bar {
+        transition: none;
+      }
+    }
+    .audio-folder-icon {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 0;
+      padding-bottom: 0px;
+      pointer-events: none;
+      user-select: none;
+    }
+    .audio-folder-icon svg {
+      display: block;
+      width: 96px;
+      height: auto;
+    }
+    .audio-folder-icon__back {
+      transition: filter 0.8s ease;
+    }
+    .audio-folder-icon__papers {
+      transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease;
+      transform-box: fill-box;
+      transform-origin: center bottom;
+    }
+    @keyframes audio-folder-papers-drop-in {
+      0% {
+        opacity: 0;
+        transform: translateY(-22px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    #audio-zone:not(.audio-has-file) .audio-folder-icon__papers {
+      opacity: 0;
+      pointer-events: none;
+      animation: none;
+    }
+    #audio-zone.audio-has-file .audio-folder-icon__papers {
+      transition: none;
+      animation: audio-folder-papers-drop-in 1.85s cubic-bezier(0.28, 0.9, 0.32, 1) both;
+    }
+    .audio-folder-icon__paper-fill {
+      transition: fill 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    #audio-zone.audio-has-file .audio-folder-icon__paper-fill {
+      fill: var(--color-action-ondark-base);
+    }
+    .audio-folder-icon__front,
+    .audio-folder-icon__tab {
+      transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      transition-delay: 80ms;
+      transform-box: fill-box;
+      transform-origin: center bottom;
+    }
+    #audio-zone:hover:not(.audio-has-file) .audio-folder-icon__back,
+    #audio-zone.drag-over:not(.audio-has-file) .audio-folder-icon__back {
+      filter: brightness(1.1);
+    }
+    #audio-zone:hover:not(.audio-has-file) .audio-folder-icon__papers,
+    #audio-zone.drag-over:not(.audio-has-file) .audio-folder-icon__papers {
+      transform: translateY(-4px);
+    }
+    #audio-zone:hover:not(.audio-has-file) .audio-folder-icon__paper-fill,
+    #audio-zone.drag-over:not(.audio-has-file) .audio-folder-icon__paper-fill {
+      fill: var(--color-action-ondark-base);
+    }
+    #audio-zone:hover:not(.audio-has-file) .audio-folder-icon__front,
+    #audio-zone.drag-over:not(.audio-has-file) .audio-folder-icon__front {
+      transform: scaleY(0.95);
+    }
+    #audio-zone:hover:not(.audio-has-file) .audio-folder-icon__tab,
+    #audio-zone.drag-over:not(.audio-has-file) .audio-folder-icon__tab {
+      transform: scaleY(0.95) translateY(4px);
+    }
+    .upload-label {
+      font-weight: 500;
+      font-size: 16px;
+      line-height: 1.35;
+      color: var(--text-color-ondark-subtle);
+    }
+    .upload-hint { font-size: 14px; color: rgba(148, 148, 168, 1); opacity: 0.5; margin-top: 8px; }
+    /* Single grid cell: prompt + file row overlap so height = max(...) during crossfade, not sum (avoids jump). */
+    .audio-zone-caption {
+      width: 100%;
+      min-height: 4rem;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto;
+      align-items: center;
+      justify-items: center;
+    }
+    .audio-zone-prompt,
+    .audio-zone-caption > .audio-file-row,
+    .audio-zone-caption > .audio-zone-processing {
+      grid-area: 1 / 1;
+      width: 100%;
+      max-width: 100%;
+    }
+    .audio-zone-processing {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 8px 0 0;
+    }
+    .audio-zone-processing .spinner {
+      margin-bottom: 16px;
+    }
+    .audio-zone-processing .audio-processing-stop {
+      flex-shrink: 0;
+      width: fit-content;
+      margin-top: 4px;
+      padding: 0;
+      background: transparent;
+      border-radius: 0;
+      font-size: 14px;
+      font-weight: 400;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-color-ondark-subtle);
+    }
+    .audio-zone-processing .audio-processing-stop:hover {
+      background: transparent;
+      color: var(--color-alert-ondark-base);
+    }
+    #audio-zone.audio-processing .audio-folder-icon,
+    #audio-zone.audio-processing .audio-zone-prompt,
+    #audio-zone.audio-processing #audio-file-row {
+      display: none !important;
+    }
+    #audio-zone.audio-processing #audio-input {
+      pointer-events: none;
+    }
+    .audio-zone-prompt {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-height: 120px;
+      opacity: 1;
+      overflow: hidden;
+      transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    #audio-zone.audio-has-file .audio-zone-prompt {
+      max-height: 0;
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+        max-height 0s linear 0.5s;
+    }
+    #audio-zone .upload-label {
+      transition: color 0.2s ease;
+    }
+    #audio-zone .upload-hint {
+      transition: opacity 0.2s ease;
+    }
+    #audio-zone:hover:not(.audio-has-file) .upload-label,
+    #audio-zone.drag-over:not(.audio-has-file) .upload-label {
+      color: var(--text);
+    }
+    #audio-zone:hover:not(.audio-has-file) .upload-hint,
+    #audio-zone.drag-over:not(.audio-has-file) .upload-hint {
+      opacity: 0.75;
+    }
+    .upload-file-name {
+      font-size: 16px;
+      line-height: 1.35;
+      color: var(--primary);
+      font-weight: 500;
+    }
+    #audio-zone.audio-has-file #audio-input {
+      pointer-events: none;
+    }
+    .audio-file-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: nowrap;
+      gap: 8px;
+      margin-top: 10px;
+      position: relative;
+      z-index: 2;
+    }
+    #audio-zone .audio-file-row {
+      margin-top: 0;
+    }
+    .audio-file-row .audio-file-remove {
+      flex-shrink: 0;
+      width: fit-content;
+      padding: 0;
+      background: transparent;
+      border-radius: 0;
+      font-size: 14px;
+      font-weight: 400;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-color-ondark-subtle);
+    }
+    .audio-file-row .audio-file-remove:hover {
+      background: transparent;
+      color: var(--color-alert-ondark-base);
+    }
+    @keyframes audio-file-row-appear {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    #audio-zone.audio-has-file .audio-file-row:not(.hidden) {
+      animation: audio-file-row-appear 0.8s cubic-bezier(0.28, 0.9, 0.32, 1) both;
+    }
+
+    /* ── Form elements ── */
+    label { display: block; font-weight: 500; margin-bottom: 6px; font-size: 13px; color: var(--text-secondary); }
+    select:not(.feature-select-field__native),
+    input[type=text]:not(.feature-select-field__input),
+    input[type=password]:not(.feature-select-field__input),
+    textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--surface-mid);
+      transition: border-color .15s, box-shadow .15s, background .15s;
+    }
+    select:not(.feature-select-field__native) option { background: var(--surface-mid); color: var(--text); }
+    select:not(.feature-select-field__native):focus,
+    input[type=text]:not(.feature-select-field__input):focus,
+    input[type=password]:not(.feature-select-field__input):focus,
+    textarea:focus {
+      outline: none;
+      border-color: transparent;
+      background: var(--surface-high);
+      box-shadow: 0 0 0 2px var(--focus);
+      color: var(--text-color-ondark-primary);
+    }
+    select:not(.feature-select-field__native):focus-visible,
+    input[type=text]:not(.feature-select-field__input):focus-visible,
+    input[type=password]:not(.feature-select-field__input):focus-visible,
+    textarea:focus-visible {
+      color: var(--text-color-ondark-primary);
+    }
+    select:not(.feature-select-field__native):active,
+    input[type=text]:not(.feature-select-field__input):active,
+    input[type=password]:not(.feature-select-field__input):active,
+    textarea:active {
+      color: var(--text-color-ondark-primary);
+    }
+    ::placeholder { color: var(--muted); }
+    textarea { resize: vertical; min-height: 80px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-row .form-group { margin-bottom: 0; }
+    .form-group { margin-bottom: 16px; }
+
+    /* ── Step heading ── */
+    .step-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .review-section-heading {
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.55;
+      letter-spacing: normal;
+      text-transform: none;
+      color: var(--text-secondary);
+      margin: 0 0 8px 0;
+    }
+    /* ── Severity badges ── */
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .03em;
+      text-transform: uppercase;
+    }
+    .badge-bug { background: var(--bug-bg); color: var(--bug); }
+    .badge-visual { background: var(--visual-bg); color: var(--visual); }
+    .badge-copy { background: var(--copy-bg); color: var(--copy); }
+
+    /* ── Ticket cards ── */
+    .tickets-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .ticket {
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      transition: all .2s;
+    }
+    .ticket.skipped {
+      opacity: .35;
+      border-style: dashed;
+    }
+    .ticket-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px 16px 0;
+    }
+    .ticket-num {
+      width: 24px;
+      height: 24px;
+      border-radius: var(--radius-xs);
+      background: var(--surface-high);
+      border: 1px solid var(--border);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .ticket-main { flex: 1; min-width: 0; }
+    .ticket-title-input {
+      font-weight: 600;
+      font-size: 15px;
+      border: none;
+      border-radius: var(--radius-xs);
+      padding: 2px 6px;
+      width: 100%;
+      background: transparent;
+      color: var(--text);
+      font-family: inherit;
+    }
+    .ticket-title-input:hover { background: var(--surface-mid); }
+    .ticket-title-input:focus,
+    .ticket-title-input:focus-visible,
+    .ticket-title-input:active {
+      outline: none;
+      background: var(--surface-mid);
+      box-shadow: 0 0 0 2px var(--focus);
+      color: var(--text-color-ondark-primary);
+    }
+    .ticket-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+    .ticket-assignee {
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .ticket-body { padding: 10px 16px 16px 52px; }
+    .ticket-desc-input {
+      font-size: 13px;
+      line-height: 1.6;
+      border: none;
+      border-radius: var(--radius-xs);
+      padding: 4px 6px;
+      width: 100%;
+      background: transparent;
+      resize: vertical;
+      min-height: 56px;
+      color: var(--text-secondary);
+      font-family: inherit;
+    }
+    .ticket-desc-input:hover { background: var(--surface-mid); }
+    .ticket-desc-input:focus,
+    .ticket-desc-input:focus-visible,
+    .ticket-desc-input:active {
+      outline: none;
+      background: var(--surface-mid);
+      box-shadow: 0 0 0 2px var(--focus);
+      color: var(--text-color-ondark-primary);
+    }
+
+    .ticket-screenshot {
+      margin-top: 10px;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      max-width: 280px;
+    }
+    .ticket-screenshot img {
+      width: 100%;
+      display: block;
+      cursor: zoom-in;
+    }
+    .ticket-screenshot-label {
+      font-size: 11px;
+      color: var(--muted);
+      padding: 4px 8px;
+      background: var(--surface-mid);
+      border-top: 1px solid var(--border);
+    }
+
+    .ticket-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 16px 12px 52px;
+    }
+
+    /* ── Toggle ── */
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      color: var(--muted);
+      user-select: none;
+    }
+    .toggle input { display: none; }
+    .toggle-track {
+      width: 32px;
+      height: 18px;
+      border-radius: 999px;
+      background: var(--border);
+      position: relative;
+      transition: background .2s;
+      flex-shrink: 0;
+    }
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--surface-high);
+      top: 2px;
+      left: 2px;
+      transition: transform .2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,.4);
+    }
+    .toggle input:checked + .toggle-track { background: var(--primary); }
+    .toggle input:checked + .toggle-track::after { transform: translateX(14px); background: var(--primary-text); }
+
+    /* ── Processing (in-audio-zone spinner + step) ── */
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 2px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .processing-step { color: var(--muted); font-size: 14px; }
+
+    /* ── Results ── */
+    .result-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 13px;
+    }
+    .result-item:last-child { border-bottom: none; }
+    .result-ok { color: var(--success); font-size: 16px; }
+    .result-skip { color: var(--muted); font-size: 16px; }
+    .result-err { color: var(--bug); font-size: 16px; }
+
+    .bottom-bar-info {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: right;
+      flex: 1;
+      min-width: 0;
+      padding-left: 12px;
+    }
+
+    /* ── Modal backdrop + panels (fade — opacity transitions; .hidden would break animation) ── */
+    #modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 99;
+      background: rgba(0, 0, 0, 0.7);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--modal-fade-duration) var(--modal-fade-ease);
+    }
+    #modal-backdrop.modal-backdrop--open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* ── Settings modal (fixed, centered) — hub + Keys / Features subviews ── */
+    #settings-panel {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      z-index: 100;
+      width: 80vw;
+      max-width: 720px;
+      max-height: min(90vh, 100%);
+      overflow-y: auto;
+      color: var(--text-color-ondark-primary);
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: opacity var(--modal-fade-duration) var(--modal-fade-ease);
+    }
+    #settings-panel.modal-panel--open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #settings-panel.modal-panel--instant {
+      transition: none !important;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #modal-backdrop,
+      #settings-panel {
+        transition-duration: 0.01ms !important;
+      }
+    }
+    .settings-panel-header {
+      position: relative;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 56px;
+      box-sizing: border-box;
+    }
+    .settings-panel-header__start,
+    .settings-panel-header__end {
+      flex: 0 0 auto;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+    }
+    .settings-panel-header__start {
+      min-width: 40px;
+    }
+    /* Hub: no back control — collapse start column so title stays centered */
+    #settings-panel[data-settings-view="hub"] .settings-panel-header__start {
+      min-width: 0;
+    }
+    #settings-panel[data-settings-view="hub"] #settings-panel-back {
+      display: none !important;
+    }
+    #settings-panel[data-settings-view="keys"] #settings-panel-back,
+    #settings-panel[data-settings-view="features"] #settings-panel-back {
+      display: inline-flex !important;
+    }
+    .settings-panel-back {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      min-height: 40px;
+      padding: 0;
+      flex-shrink: 0;
+      justify-content: center;
+      color: var(--text-secondary);
+      background: unset;
+      background-color: unset;
+    }
+    .settings-panel-back:hover {
+      color: var(--text);
+      background: var(--surface-high);
+    }
+    .settings-panel-title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: calc(100% - 120px);
+      font-weight: 600;
+      font-size: 16px;
+      line-height: 24px;
+      text-align: center;
+      pointer-events: none;
+    }
+    .btn.btn-ghost.btn-modal-close {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      min-height: 40px;
+      padding: 0;
+      box-sizing: border-box;
+      justify-content: center;
+      font-size: 16px;
+      line-height: 1;
+      color: var(--text-secondary);
+      background: unset;
+      background-color: unset;
+    }
+    .btn.btn-ghost.btn-modal-close:hover {
+      background: var(--surface-high);
+    }
+    .settings-panel-body { padding: 20px; }
+    .settings-hub-options {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .settings-hub-option {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      width: 100%;
+      margin: 0;
+      padding: 16px 20px;
+      text-align: left;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 24px;
+      color: var(--text);
+      background: var(--background-color-ondark-medium);
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background .12s;
+    }
+    .settings-hub-option-title {
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 24px;
+      color: var(--text);
+    }
+    .settings-hub-option-desc {
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 1.45;
+      color: var(--text-secondary);
+      text-align: left;
+    }
+    .settings-hub-option:hover {
+      background: var(--surface-high);
+    }
+    .settings-hub-option:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(95, 93, 254, 0.35);
+    }
+    .settings-panel-footer {
+      padding: 20px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .settings-panel-footer .btn {
+      width: 100%;
+      justify-content: center;
+      height: 40px;
+      min-height: 40px;
+      padding-top: 0;
+      padding-bottom: 0;
+      box-sizing: border-box;
+    }
+
+    #settings-panel .form-group label {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    #settings-view-keys .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    /* ── Feature rows ── */
+    #features-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .feature-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr 48px;
+      column-gap: 16px;
+      align-items: center;
+    }
+    .feature-row .feature-select-field--panel { min-width: 0; }
+    .feature-row input { margin-bottom: 0; }
+
+    /* ── Alert ── */
+    .alert {
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+    .alert-error { background: var(--bug-bg); color: var(--bug); border: 1px solid #591d24; }
+    .alert-success { background: var(--success-bg); color: var(--success); border: 1px solid #274027; }
+
+    /* ── Image lightbox ── */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.9);
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: zoom-out;
+      padding: 24px;
+    }
+    .lightbox img {
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: var(--radius-sm);
+      box-shadow: 0 18px 24px rgba(0,0,0,.4);
+    }
+
+    /* ── Screenshots preview strip ── */
+    .screenshots-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .screenshot-thumb {
+      width: 72px;
+      height: 52px;
+      object-fit: cover;
+      border-radius: var(--radius-xs);
+      border: 1px solid var(--border);
+    }
+
+    /* ── Floating bar primary CTAs — upload process + review create ── */
+    #process-btn,
+    #create-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 48px;
+      padding: 14px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 20px;
+      border-radius: var(--radius-sm);
+      background: var(--color-action-ondark-base);
+      color: var(--text-color-onlight-primary);
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+    #process-btn:hover:not(:disabled),
+    #create-btn:hover:not(:disabled) { background: var(--color-action-ondark-active); }
+    #process-btn:focus-visible,
+    #create-btn:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--border-color-ondark-focused); }
+    #process-btn:disabled,
+    #create-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    /* ── Utility ── */
+    .hidden { display: none !important; }
+    .mt-4 { margin-top: 4px; }
+    .mt-8 { margin-top: 8px; }
+    .mt-16 { margin-top: 16px; }
+    .mt-20 { margin-top: 20px; }
+    .mt-24 { margin-top: 24px; }
+    .flex { display: flex; }
+    .gap-8 { gap: 8px; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .justify-center { justify-content: center; }
+    .w-full { width: 100%; }
+  </style>
+</head>
+<body>
+
+<!-- Main -->
+<main id="app">
+
+  <!-- ── Upload State ── -->
+  <div id="upload-view">
+    <!-- Alignment lines: same stacking context as upload UI so they sit above the card, not under it -->
+    <div id="alignment-lines" aria-hidden="true">
+      <div id="line-top"></div>
+      <div id="line-bottom"></div>
+      <div id="line-left"></div>
+      <div id="line-right"></div>
+    </div>
+    <div id="upload-card-wrapper">
+    <div class="form-group" id="feature-select-bar">
+      <div class="feature-select-bar__inner">
+        <div class="feature-select-bar__top">
+          <div class="feature-select-bar__cluster">
+            <div class="feature-select-field" id="feature-select-field">
+              <select id="feature-select" class="feature-select-field__native" tabindex="-1" aria-hidden="true">
+              </select>
+              <button type="button" id="feature-select-trigger" class="feature-select-field__trigger" aria-label="Select feature" aria-haspopup="listbox" aria-expanded="false" aria-controls="feature-select-listbox">
+                <span id="feature-select-trigger-label" class="feature-select-field__trigger-label"></span>
+              </button>
+              <span class="feature-select-field__chevron" aria-hidden="true">
+                <i class="fa-solid fa-chevron-down"></i>
+              </span>
+              <div id="feature-select-listbox" class="feature-select-field__dropdown" role="listbox" aria-label="Features" hidden></div>
+            </div>
+          </div>
+          <button type="button" class="feature-select-icon-btn" title="Settings" aria-label="Settings" onclick="openSettings()">
+            <i class="fa-solid fa-gear" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="feature-select-bar__cta" id="feature-bar-cta" aria-hidden="true">
+          <div class="feature-select-bar__cta-inner">
+            <button type="button" id="process-btn" onclick="processRecording()">Process recording</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="upload-card">
+        <!-- Audio upload -->
+        <div class="form-group">
+          <div class="upload-zone" id="audio-zone">
+            <input type="file" id="audio-input" accept="audio/*,video/*" onchange="handleAudioChange(this)">
+            <div class="audio-folder-icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="32 0 132 189" width="96" height="138" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                  <linearGradient id="audio-folder-filesGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#2c2c3a" stop-opacity="0" />
+                    <stop offset="20%" stop-color="#2c2c3a" stop-opacity="0.1" />
+                    <stop offset="100%" stop-color="#2c2c3a" stop-opacity="1" />
+                  </linearGradient>
+                  <linearGradient id="audio-folder-frontFillGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#383848" stop-opacity="1" />
+                    <stop offset="100%" stop-color="#2c2c3a" stop-opacity="0" />
+                  </linearGradient>
+                  <linearGradient id="audio-folder-frontShadowGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#2c2c3a" stop-opacity="0" />
+                    <stop offset="100%" stop-color="#22222c" stop-opacity="1" />
+                  </linearGradient>
+                  <linearGradient id="audio-folder-frontStrokeGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#45455a" />
+                    <stop offset="50%" stop-color="#45455a" stop-opacity="0" />
+                    <stop offset="100%" stop-color="#45455a" stop-opacity="0" />
+                  </linearGradient>
+                </defs>
+                <path class="audio-folder-icon__back" fill="#2c2c3a" transform="translate(40, 40)" d="M 55.28 7.82 C 57.26 9.95 59.93 11.03 62.70 11.03 C 65.19 11.03 67.67 11.03 70.15 11.03 L 96.84 11.03 L 103.88 11.03 C 108.22 11.03 111.90 10.97 114.55 15.13 C 116.45 18.10 115.94 21.95 115.94 25.43 L 115.93 35.76 L 115.92 72.47 L 115.94 91.86 C 115.95 94.77 116.00 97.68 115.97 100.58 C 115.94 103.24 114.51 106.06 112.26 107.52 C 109.24 109.47 104.90 108.97 101.39 108.97 L 89.68 108.97 L 51.01 108.92 L 20.18 108.98 L 12.54 108.97 C 10.96 108.97 8.36 109.06 6.90 108.74 C 4.58 108.26 2.56 106.87 1.28 104.88 C -0.46 102.13 0.07 96.37 0.09 93.06 L 0.09 80.80 L 0.10 38.46 L 0.08 18.21 C 0.07 14.42 -0.14 11.50 0.39 7.81 C 0.94 5.28 2.49 3.17 4.58 1.82 C 7.83 -0.27 10.62 0.03 14.31 0.03 L 23.51 0.03 L 35.53 0.03 C 38.79 0.02 42.93 -0.18 46.01 0.53 C 51.20 2.67 51.86 4.08 55.28 7.82 Z" />
+                <g class="audio-folder-icon__papers">
+                  <rect class="audio-folder-icon__paper-fill" x="44" y="56" width="108" height="64" rx="6" fill="#a8a8be" />
+                  <rect x="44" y="56" width="108" height="64" rx="6" fill="url(#audio-folder-filesGrad)" />
+                </g>
+                <g class="audio-folder-icon__front">
+                  <rect x="40" y="62.03" width="116" height="87" rx="8" fill="#2c2c3a" />
+                  <rect x="40" y="62.03" width="116" height="87" rx="8" fill="url(#audio-folder-frontFillGrad)" opacity="0.75" />
+                  <rect x="40" y="62.03" width="116" height="87" rx="8" fill="url(#audio-folder-frontShadowGrad)" opacity="0.8" />
+                  <rect x="40" y="62.03" width="116" height="87" rx="8" fill="none" stroke="url(#audio-folder-frontStrokeGrad)" stroke-width="1" />
+                </g>
+                <g class="audio-folder-icon__tab">
+                  <rect x="50" y="72.03" width="48" height="10" rx="5" fill="#2c2c3a" />
+                  <rect x="50" y="72.03" width="48" height="10" rx="5" fill="#22222c" opacity="0.2" />
+                </g>
+              </svg>
+            </div>
+
+            <div class="audio-zone-caption">
+              <div class="audio-zone-prompt">
+                <div class="upload-label">Drag and drop or click to add recording</div>
+                <div class="upload-hint">MP3, M4A, WAV, MP4 — up to 500MB</div>
+              </div>
+              <div id="audio-file-row" class="audio-file-row hidden" aria-live="polite">
+                <span id="audio-name" class="upload-file-name"></span>
+                <button type="button" class="btn btn-ghost btn-sm audio-file-remove" onclick="clearAudioFile()">Remove file</button>
+              </div>
+              <div id="audio-zone-processing" class="audio-zone-processing hidden" aria-live="polite">
+                <div class="spinner" aria-hidden="true"></div>
+                <div class="processing-step" id="processing-step">Transcribing audio…</div>
+                <button type="button" class="btn btn-ghost btn-sm audio-processing-stop" onclick="stopProcessingUpload()">Stop upload</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Screenshots upload (hidden for now, keep for future use) -->
+        <div class="form-group" style="display:none">
+          <label>Screenshots <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+          <div class="upload-zone" id="ss-zone">
+            <input type="file" id="ss-input" accept="image/*" multiple onchange="handleScreenshotsChange(this)">
+            <div class="upload-icon">🖼</div>
+            <div class="upload-label">Drop screenshots here</div>
+            <div class="upload-hint">PNG, JPG, WebP — multiple files OK</div>
+          </div>
+          <div id="ss-strip" class="screenshots-strip"></div>
+        </div>
+
+        <div id="upload-error" class="alert alert-error hidden"></div>
+    </div>
+    </div><!-- /upload-card-wrapper -->
+
+    <div id="modal-backdrop" aria-hidden="true"></div>
+
+    <div id="settings-panel" aria-hidden="true" data-settings-view="hub">
+      <div class="settings-panel-header">
+        <div class="settings-panel-header__start">
+          <button type="button" id="settings-panel-back" class="btn btn-ghost settings-panel-back" aria-label="Back" onclick="settingsGoBack()">
+            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+          </button>
+        </div>
+        <span id="settings-panel-title" class="settings-panel-title">Settings</span>
+        <div class="settings-panel-header__end">
+          <button type="button" class="btn btn-ghost btn-modal-close" onclick="closeSettings()">✕</button>
+        </div>
+      </div>
+      <div class="settings-panel-body">
+        <div id="settings-view-hub" class="settings-panel-view">
+          <div class="settings-hub-options">
+            <button type="button" class="settings-hub-option" onclick="openSettingsSubpanel('features')">
+              <span class="settings-hub-option-title">Features</span>
+              <span class="settings-hub-option-desc">Feature name, assignee, Fizzy user ID, and board ID per feature.</span>
+            </button>
+            <button type="button" class="settings-hub-option" onclick="openSettingsSubpanel('keys')">
+              <span class="settings-hub-option-title">Keys</span>
+              <span class="settings-hub-option-desc">Anthropic API key, Fizzy tokens, and base URL.</span>
+            </button>
+          </div>
+        </div>
+        <div id="settings-view-keys" class="settings-panel-view hidden">
+          <div class="form-group">
+            <label>Anthropic API Key</label>
+            <div class="feature-select-field feature-select-field--panel">
+              <input type="password" id="s-anthropic" class="feature-select-field__input" placeholder="sk-ant-…" autocomplete="off">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Base URL</label>
+            <div class="feature-select-field feature-select-field--panel">
+              <input type="text" id="s-fizzy-base" class="feature-select-field__input" placeholder="https://your-fizzy-host" autocomplete="off">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Fizzy Personal Access Token</label>
+            <div class="feature-select-field feature-select-field--panel">
+              <input type="password" id="s-fizzy-token" class="feature-select-field__input" placeholder="Your Fizzy access token" autocomplete="off">
+            </div>
+          </div>
+        </div>
+        <div id="settings-view-features" class="settings-panel-view hidden">
+          <p style="font-size:16px;color:var(--muted);margin-bottom:20px;margin-top:0">
+            For each feature, set the Fizzy board where tickets are created, the default assignee, and their Fizzy user ID (from their profile URL).
+          </p>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 48px;column-gap:16px;margin-bottom:8px">
+            <span style="font-size:12px;font-weight:400;color:var(--muted)">Feature name</span>
+            <span style="font-size:12px;font-weight:400;color:var(--muted)">Assignee name</span>
+            <span style="font-size:12px;font-weight:400;color:var(--muted)">Fizzy user ID</span>
+            <span style="font-size:12px;font-weight:400;color:var(--muted)">Board ID</span>
+            <span></span>
+          </div>
+          <div id="features-list"></div>
+          <button type="button" class="btn btn-ghost mt-20 w-full justify-center" onclick="addFeatureRow()">+ Add feature</button>
+        </div>
+      </div>
+      <div id="settings-footer-keys" class="settings-panel-footer hidden">
+        <button type="button" class="btn btn-ghost" onclick="closeSettings()">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="saveSettings()">Save</button>
+      </div>
+      <div id="settings-footer-features" class="settings-panel-footer hidden">
+        <button type="button" class="btn btn-ghost" onclick="closeSettings()">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="saveFeaturesAssignees()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Review State ── -->
+  <div id="review-view" class="hidden">
+
+    <!-- Tickets -->
+    <p class="review-section-heading">Review tickets</p>
+    <div class="tickets-grid" id="tickets-container"></div>
+
+    <!-- Results (after creation) -->
+    <div id="results-section" class="hidden mt-24">
+      <div class="step-label" style="margin-bottom:8px">Created</div>
+      <div class="card">
+        <div class="card-body" id="results-body"></div>
+      </div>
+    </div>
+
+    <!-- Floating toolbar (same pattern as upload #feature-select-bar) -->
+    <div class="form-group hidden" id="review-action-bar">
+      <div class="feature-select-bar__inner feature-select-bar__inner--cta-visible">
+        <div class="feature-select-bar__top">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="resetToUpload()">← New session</button>
+          <span class="bottom-bar-info" id="bottom-bar-info"></span>
+        </div>
+        <div class="feature-select-bar__cta feature-select-bar__cta--visible" aria-hidden="false">
+          <div class="feature-select-bar__cta-inner">
+            <button type="button" id="create-btn" onclick="createTickets()">Create 0 tickets</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<!-- Image lightbox -->
+<div class="lightbox hidden" id="lightbox" onclick="closeLightbox()">
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<script>
+  // ── State ──
+  let tickets = [];
+  let config = {};
+  let processStepTimeoutId = null;
+  let processAbortController = null;
+
+  // ── Init ──
+  async function init() {
+    config = await fetch('/api/config').then(r => r.json());
+    if (!config.features || !config.features.length) {
+      config.features = [{ name: '', assignee_name: '', assignee_id: '', board_id: '' }];
+    }
+    (config.features || []).forEach(f => {
+      if (f.board_id === undefined) f.board_id = config.fizzy_board_id || '';
+    });
+    populateFeatureSelect();
+    setupFeatureSelectCombobox();
+    requestAnimationFrame(updateAlignmentLines);
+  }
+
+  function populateFeatureSelect() {
+    const sel = document.getElementById('feature-select');
+    const current = sel.value;
+    sel.innerHTML = '';
+    (config.features || []).forEach(f => {
+      const name = String(f.name || '').trim();
+      if (!name) return;
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name + (f.assignee_name ? ` → ${f.assignee_name}` : '');
+      sel.appendChild(opt);
+    });
+    if ([...sel.options].some(o => o.value === current)) {
+      sel.value = current;
+    } else if (sel.options.length > 0) {
+      sel.selectedIndex = 0;
+    }
+    syncFeatureSelectValueState();
+    renderFeatureSelectListbox();
+  }
+
+  function renderFeatureSelectListbox() {
+    const sel = document.getElementById('feature-select');
+    const listbox = document.getElementById('feature-select-listbox');
+    if (!sel || !listbox) return;
+    listbox.innerHTML = '';
+    Array.from(sel.options).forEach((opt, i) => {
+      const row = document.createElement('div');
+      row.className = 'feature-select-field__option';
+      row.setAttribute('role', 'option');
+      row.id = 'feature-select-opt-' + i;
+      row.textContent = opt.textContent;
+      row.dataset.value = opt.value;
+      row.setAttribute('aria-selected', sel.selectedIndex === i ? 'true' : 'false');
+      row.addEventListener('mousedown', e => {
+        e.preventDefault();
+      });
+      row.addEventListener('click', () => {
+        sel.selectedIndex = i;
+        sel.dispatchEvent(new Event('change', { bubbles: true }));
+        closeFeatureSelectDropdown();
+        const trigger = document.getElementById('feature-select-trigger');
+        if (trigger) trigger.focus();
+      });
+      listbox.appendChild(row);
+    });
+  }
+
+  function openFeatureSelectDropdown() {
+    const listbox = document.getElementById('feature-select-listbox');
+    const trigger = document.getElementById('feature-select-trigger');
+    const wrap = document.getElementById('feature-select-field');
+    if (!listbox || !trigger || !wrap) return;
+    renderFeatureSelectListbox();
+    listbox.hidden = false;
+    trigger.setAttribute('aria-expanded', 'true');
+    wrap.classList.add('feature-select-field--open');
+  }
+
+  function closeFeatureSelectDropdown() {
+    const listbox = document.getElementById('feature-select-listbox');
+    const trigger = document.getElementById('feature-select-trigger');
+    const wrap = document.getElementById('feature-select-field');
+    if (!listbox) return;
+    if (listbox.hidden) return;
+    listbox.hidden = true;
+    if (trigger) trigger.setAttribute('aria-expanded', 'false');
+    if (wrap) wrap.classList.remove('feature-select-field--open');
+  }
+
+  function toggleFeatureSelectDropdown() {
+    const listbox = document.getElementById('feature-select-listbox');
+    if (!listbox) return;
+    if (listbox.hidden) openFeatureSelectDropdown();
+    else closeFeatureSelectDropdown();
+  }
+
+  function setupFeatureSelectCombobox() {
+    const wrap = document.getElementById('feature-select-field');
+    const trigger = document.getElementById('feature-select-trigger');
+    const sel = document.getElementById('feature-select');
+    if (!wrap || !trigger || !sel) return;
+    trigger.addEventListener('click', e => {
+      e.stopPropagation();
+      toggleFeatureSelectDropdown();
+    });
+    sel.addEventListener('change', syncFeatureSelectValueState);
+    document.addEventListener('click', e => {
+      if (wrap.contains(e.target)) return;
+      closeFeatureSelectDropdown();
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Escape') return;
+      const listbox = document.getElementById('feature-select-listbox');
+      if (!listbox || listbox.hidden) return;
+      closeFeatureSelectDropdown();
+      trigger.focus();
+      e.preventDefault();
+    });
+  }
+
+  function syncFeatureSelectValueState() {
+    const sel = document.getElementById('feature-select');
+    const wrap = document.getElementById('feature-select-field');
+    const labelEl = document.getElementById('feature-select-trigger-label');
+    if (!sel || !wrap) return;
+    wrap.classList.toggle('feature-select-field--has-value', !!sel.value);
+    const opt = sel.options[sel.selectedIndex];
+    if (labelEl) labelEl.textContent = opt ? opt.textContent : '';
+    const listbox = document.getElementById('feature-select-listbox');
+    if (listbox) {
+      listbox.querySelectorAll('[role="option"]').forEach((row, i) => {
+        row.setAttribute('aria-selected', sel.selectedIndex === i ? 'true' : 'false');
+      });
+    }
+  }
+
+  function syncUploadViewPanelVisibility() {
+    const onUpload = !document.getElementById('upload-view').classList.contains('hidden');
+    document.getElementById('alignment-lines').style.display = onUpload ? '' : 'none';
+    if (onUpload) requestAnimationFrame(updateAlignmentLines);
+  }
+
+  function syncModalBackdrop() {
+    const settingsOpen = document.getElementById('settings-panel').classList.contains('modal-panel--open');
+    const backdrop = document.getElementById('modal-backdrop');
+    if (!backdrop) return;
+    backdrop.classList.toggle('modal-backdrop--open', settingsOpen);
+    backdrop.setAttribute('aria-hidden', settingsOpen ? 'false' : 'true');
+    document.getElementById('settings-panel').setAttribute('aria-hidden', settingsOpen ? 'false' : 'true');
+  }
+
+  function instantCloseModalPanel(el) {
+    if (!el || !el.classList.contains('modal-panel--open')) return;
+    el.classList.add('modal-panel--instant');
+    el.classList.remove('modal-panel--open');
+    void el.offsetHeight;
+    el.classList.remove('modal-panel--instant');
+  }
+
+  let processCtaHideGeneration = 0;
+  let processCtaCollapseTimer = null;
+
+  function syncProcessButtonVisibility() {
+    const audioInput = document.getElementById('audio-input');
+    const cta = document.getElementById('feature-bar-cta');
+    const inner = document.querySelector('#feature-select-bar .feature-select-bar__inner');
+    if (!audioInput || !cta || !inner) return;
+    const hasFile = audioInput.files.length > 0;
+
+    if (hasFile) {
+      processCtaHideGeneration++;
+      if (processCtaCollapseTimer != null) {
+        clearTimeout(processCtaCollapseTimer);
+        processCtaCollapseTimer = null;
+      }
+      cta.classList.remove('feature-select-bar__cta--hiding');
+      cta.classList.add('feature-select-bar__cta--visible');
+      inner.classList.add('feature-select-bar__inner--cta-visible');
+      cta.setAttribute('aria-hidden', 'false');
+      return;
+    }
+
+    const capturedGen = processCtaHideGeneration;
+
+    if (!cta.classList.contains('feature-select-bar__cta--visible')) {
+      inner.classList.remove('feature-select-bar__inner--cta-visible');
+      cta.classList.remove('feature-select-bar__cta--hiding');
+      cta.setAttribute('aria-hidden', 'true');
+      return;
+    }
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      cta.classList.remove('feature-select-bar__cta--visible', 'feature-select-bar__cta--hiding');
+      inner.classList.remove('feature-select-bar__inner--cta-visible');
+      cta.setAttribute('aria-hidden', 'true');
+      return;
+    }
+
+    if (cta.classList.contains('feature-select-bar__cta--hiding')) {
+      return;
+    }
+
+    cta.classList.add('feature-select-bar__cta--hiding');
+
+    const finalizeCollapse = () => {
+      if (capturedGen !== processCtaHideGeneration) return;
+      cta.classList.remove('feature-select-bar__cta--visible', 'feature-select-bar__cta--hiding');
+      inner.classList.remove('feature-select-bar__inner--cta-visible');
+      cta.setAttribute('aria-hidden', 'true');
+    };
+
+    /* Fade (~0.42s) and toolbar collapse (0.55s) overlap: start collapse partway through fade */
+    const PROCESS_CTA_COLLAPSE_DELAY_MS = 160;
+    if (processCtaCollapseTimer != null) clearTimeout(processCtaCollapseTimer);
+    processCtaCollapseTimer = setTimeout(() => {
+      processCtaCollapseTimer = null;
+      if (capturedGen !== processCtaHideGeneration) return;
+      finalizeCollapse();
+    }, PROCESS_CTA_COLLAPSE_DELAY_MS);
+  }
+
+  // ── File handlers ──
+  function handleAudioChange(input) {
+    const file = input.files[0];
+    const nameEl = document.getElementById('audio-name');
+    const rowEl = document.getElementById('audio-file-row');
+    const zone = document.getElementById('audio-zone');
+    if (file) {
+      nameEl.textContent = file.name;
+      rowEl.classList.remove('hidden');
+      zone.classList.add('audio-has-file');
+    } else {
+      nameEl.textContent = '';
+      rowEl.classList.add('hidden');
+      zone.classList.remove('audio-has-file');
+    }
+    syncProcessButtonVisibility();
+    runAlignmentLinesDuringDragTransition();
+  }
+
+  function clearAudioFile() {
+    const input = document.getElementById('audio-input');
+    if (!input) return;
+    input.value = '';
+    handleAudioChange(input);
+  }
+
+  function handleScreenshotsChange(input) {
+    const strip = document.getElementById('ss-strip');
+    strip.innerHTML = '';
+    Array.from(input.files).forEach(file => {
+      const img = document.createElement('img');
+      img.className = 'screenshot-thumb';
+      img.src = URL.createObjectURL(file);
+      img.alt = file.name;
+      strip.appendChild(img);
+    });
+  }
+
+  // Drag-over styling (audio zone + card expand smoothly; alignment lines track during transition)
+  const DRAG_EXPAND_TRANSITION_MS = 320;
+  let alignmentLinesDuringTransitionRaf = null;
+  function runAlignmentLinesDuringDragTransition() {
+    if (alignmentLinesDuringTransitionRaf != null) {
+      cancelAnimationFrame(alignmentLinesDuringTransitionRaf);
+      alignmentLinesDuringTransitionRaf = null;
+    }
+    const start = performance.now();
+    function tick() {
+      updateAlignmentLines();
+      if (performance.now() - start < DRAG_EXPAND_TRANSITION_MS) {
+        alignmentLinesDuringTransitionRaf = requestAnimationFrame(tick);
+      } else {
+        alignmentLinesDuringTransitionRaf = null;
+        updateAlignmentLines();
+      }
+    }
+    alignmentLinesDuringTransitionRaf = requestAnimationFrame(tick);
+  }
+
+  const audioZone = document.getElementById('audio-zone');
+  const uploadCard = document.getElementById('upload-card');
+  audioZone.addEventListener('transitionend', e => {
+    if (e.target !== audioZone) return;
+    const p = e.propertyName;
+    if (p === 'min-height' || p === 'width' || p === 'margin-left' || p === 'margin-inline-start') {
+      updateAlignmentLines();
+    }
+  });
+  uploadCard.addEventListener('transitionend', e => {
+    if (e.target !== uploadCard) return;
+    const p = e.propertyName;
+    if (p === 'width' || p === 'margin-left' || p === 'margin-inline-start') {
+      updateAlignmentLines();
+    }
+  });
+  audioZone.addEventListener('mouseenter', () => {
+    if (!audioZone.classList.contains('audio-has-file')) {
+      runAlignmentLinesDuringDragTransition();
+    }
+  });
+  audioZone.addEventListener('mouseleave', () => {
+    if (!audioZone.classList.contains('audio-has-file')) {
+      runAlignmentLinesDuringDragTransition();
+    }
+  });
+  audioZone.addEventListener('dragover', e => {
+    if (audioZone.classList.contains('audio-processing')) return;
+    e.preventDefault();
+    audioZone.classList.add('drag-over');
+    runAlignmentLinesDuringDragTransition();
+  });
+  audioZone.addEventListener('dragleave', e => {
+    if (audioZone.classList.contains('audio-processing')) return;
+    const next = e.relatedTarget;
+    if (next && audioZone.contains(next)) return;
+    audioZone.classList.remove('drag-over');
+    runAlignmentLinesDuringDragTransition();
+  });
+  audioZone.addEventListener('drop', e => {
+    if (audioZone.classList.contains('audio-processing')) {
+      e.preventDefault();
+      return;
+    }
+    e.preventDefault();
+    audioZone.classList.remove('drag-over');
+    runAlignmentLinesDuringDragTransition();
+    const input = document.getElementById('audio-input');
+    const files = e.dataTransfer && e.dataTransfer.files;
+    if (input && files && files.length > 0) {
+      const dt = new DataTransfer();
+      dt.items.add(files[0]);
+      input.files = dt.files;
+      handleAudioChange(input);
+    }
+  });
+
+  const ssZone = document.getElementById('ss-zone');
+  ssZone.addEventListener('dragover', e => { e.preventDefault(); ssZone.classList.add('drag-over'); });
+  ssZone.addEventListener('dragleave', () => ssZone.classList.remove('drag-over'));
+  ssZone.addEventListener('drop', e => {
+    e.preventDefault();
+    ssZone.classList.remove('drag-over');
+    const input = document.getElementById('ss-input');
+    const files = e.dataTransfer && e.dataTransfer.files;
+    if (input && files && files.length > 0) {
+      const dt = new DataTransfer();
+      Array.from(files).forEach(f => dt.items.add(f));
+      input.files = dt.files;
+      handleScreenshotsChange(input);
+    }
+  });
+
+  // ── Process ──
+  function clearAudioProcessingState() {
+    if (processStepTimeoutId != null) {
+      clearTimeout(processStepTimeoutId);
+      processStepTimeoutId = null;
+    }
+    processAbortController = null;
+    const zone = document.getElementById('audio-zone');
+    const procEl = document.getElementById('audio-zone-processing');
+    const btn = document.getElementById('process-btn');
+    const featureBar = document.getElementById('feature-select-bar');
+    if (zone) zone.classList.remove('audio-processing');
+    if (procEl) procEl.classList.add('hidden');
+    if (btn) btn.disabled = false;
+    if (featureBar) featureBar.removeAttribute('aria-hidden');
+    requestAnimationFrame(updateAlignmentLines);
+  }
+
+  function stopProcessingUpload() {
+    if (processAbortController) {
+      processAbortController.abort();
+    }
+  }
+
+  async function processRecording() {
+    const audioInput = document.getElementById('audio-input');
+    const ssInput = document.getElementById('ss-input');
+    const feature = document.getElementById('feature-select').value;
+    const errorEl = document.getElementById('upload-error');
+    const zone = document.getElementById('audio-zone');
+
+    errorEl.classList.add('hidden');
+
+    if (zone && zone.classList.contains('audio-processing')) {
+      return;
+    }
+
+    if (!audioInput.files.length) {
+      showUploadError('Please select a voice recording first.');
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append('audio', audioInput.files[0]);
+    fd.append('feature', feature);
+    Array.from(ssInput.files).forEach(f => fd.append('screenshots', f));
+
+    showProcessing();
+
+    processAbortController = new AbortController();
+    const { signal } = processAbortController;
+
+    const stepEl = document.getElementById('processing-step');
+    processStepTimeoutId = setTimeout(() => {
+      processStepTimeoutId = null;
+      if (stepEl) stepEl.textContent = 'Generating tickets with AI…';
+    }, 4000);
+
+    try {
+      const resp = await fetch('/api/process', { method: 'POST', body: fd, signal });
+      const data = await resp.json();
+
+      if (!resp.ok) {
+        clearAudioProcessingState();
+        showUploadError(data.error || 'Something went wrong.');
+        showView('upload');
+        return;
+      }
+
+      clearAudioProcessingState();
+      tickets = data.tickets;
+      renderReview();
+      showView('review');
+    } catch (err) {
+      clearAudioProcessingState();
+      if (err.name === 'AbortError') {
+        return;
+      }
+      showUploadError('Network error: ' + err.message);
+      showView('upload');
+    }
+  }
+
+  // ── Render review ──
+  function renderReview() {
+    const container = document.getElementById('tickets-container');
+    container.innerHTML = '';
+
+    tickets.forEach((t, i) => {
+      const el = document.createElement('div');
+      el.className = 'ticket';
+      el.id = `ticket-${i}`;
+
+      const sevClass = `badge-${t.severity || 'visual'}`;
+      const sevLabel = t.severity || 'visual';
+      const assigneePart = t.assignee_name
+        ? `<span class="ticket-assignee">${t.assignee_name}</span>`
+        : '';
+      const ssPart = t.screenshot
+        ? `<div class="ticket-screenshot">
+             <img src="/uploads/${encodeURIComponent(t.screenshot)}"
+                  alt="${t.screenshot}"
+                  onclick="openLightbox(this.src)">
+             <div class="ticket-screenshot-label">${t.screenshot}</div>
+           </div>`
+        : '';
+
+      el.innerHTML = `
+        <div class="ticket-top">
+          <div class="ticket-num">${i + 1}</div>
+          <div class="ticket-main">
+            <input class="ticket-title-input" value="${escHtml(t.title)}" oninput="tickets[${i}].title = this.value">
+            <div class="ticket-meta">
+              <span class="badge ${sevClass}">${sevLabel}</span>
+              ${assigneePart}
+            </div>
+          </div>
+        </div>
+        <div class="ticket-body">
+          <textarea class="ticket-desc-input" rows="3" oninput="tickets[${i}].description = this.value">${escHtml(t.description)}</textarea>
+          ${ssPart}
+        </div>
+        <div class="ticket-actions">
+          <label class="toggle" title="Skip this ticket">
+            <input type="checkbox" id="skip-${i}" onchange="toggleSkip(${i}, this.checked)">
+            <div class="toggle-track"></div>
+            Skip
+          </label>
+        </div>
+      `;
+      container.appendChild(el);
+    });
+
+    updateBottomBar();
+  }
+
+  function toggleSkip(i, skipped) {
+    tickets[i].skip = skipped;
+    document.getElementById(`ticket-${i}`).classList.toggle('skipped', skipped);
+    updateBottomBar();
+  }
+
+  function updateBottomBar() {
+    const active = tickets.filter(t => !t.skip).length;
+    const total = tickets.length;
+    document.getElementById('bottom-bar-info').textContent =
+      `${active} of ${total} ticket${total !== 1 ? 's' : ''} will be created`;
+    document.getElementById('create-btn').textContent = `Create ${active} ticket${active !== 1 ? 's' : ''}`;
+  }
+
+  // ── Create tickets ──
+  async function createTickets() {
+    const btn = document.getElementById('create-btn');
+    btn.disabled = true;
+    btn.textContent = 'Creating…';
+
+    try {
+      const resp = await fetch('/api/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tickets })
+      });
+      const data = await resp.json();
+      renderResults(data.results);
+    } catch (err) {
+      alert('Error: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      updateBottomBar();
+    }
+  }
+
+  function renderResults(results) {
+    const section = document.getElementById('results-section');
+    const body = document.getElementById('results-body');
+    section.classList.remove('hidden');
+
+    body.innerHTML = results.map(r => {
+      if (r.skipped) {
+        return `<div class="result-item"><span class="result-skip">—</span> <span style="color:var(--muted)">${escHtml(r.title)} <em>(skipped)</em></span></div>`;
+      }
+      if (r.ok) {
+        return `<div class="result-item"><span class="result-ok">✓</span> <strong>${escHtml(r.title)}</strong> <span style="color:var(--muted)">#${r.card_number}</span></div>`;
+      }
+      return `<div class="result-item"><span class="result-err">✗</span> ${escHtml(r.title)} — <span style="color:var(--bug)">${r.error}</span></div>`;
+    }).join('');
+
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ── View management ──
+  function showView(view) {
+    document.getElementById('upload-view').classList.toggle('hidden', view !== 'upload');
+    document.getElementById('review-view').classList.toggle('hidden', view !== 'review');
+    document.getElementById('review-action-bar').classList.toggle('hidden', view !== 'review');
+    if (view !== 'upload') {
+      instantCloseModalPanel(document.getElementById('settings-panel'));
+      syncModalBackdrop();
+    }
+    document.getElementById('alignment-lines').style.display = view === 'upload' ? '' : 'none';
+    if (view === 'upload') {
+      syncProcessButtonVisibility();
+      syncUploadViewPanelVisibility();
+    }
+  }
+
+  function updateAlignmentLines() {
+    const card = document.getElementById('upload-card');
+    if (!card) return;
+    const r = card.getBoundingClientRect();
+    document.getElementById('line-top').style.top = r.top + 'px';
+    document.getElementById('line-bottom').style.top = r.bottom + 'px';
+    document.getElementById('line-left').style.left = r.left + 'px';
+    document.getElementById('line-right').style.left = r.right + 'px';
+  }
+
+  window.addEventListener('resize', () => {
+    if (!document.getElementById('upload-view').classList.contains('hidden')) {
+      updateAlignmentLines();
+    }
+  });
+
+  function showProcessing() {
+    clearAudioProcessingState();
+    const zone = document.getElementById('audio-zone');
+    const procEl = document.getElementById('audio-zone-processing');
+    const stepEl = document.getElementById('processing-step');
+    const btn = document.getElementById('process-btn');
+    const featureBar = document.getElementById('feature-select-bar');
+    if (stepEl) stepEl.textContent = 'Transcribing audio…';
+    if (zone) zone.classList.add('audio-processing');
+    if (procEl) procEl.classList.remove('hidden');
+    if (btn) btn.disabled = true;
+    if (featureBar) featureBar.setAttribute('aria-hidden', 'true');
+    requestAnimationFrame(updateAlignmentLines);
+  }
+
+  function showUploadError(msg) {
+    const el = document.getElementById('upload-error');
+    el.textContent = msg;
+    el.classList.remove('hidden');
+  }
+
+  function resetToUpload() {
+    clearAudioProcessingState();
+    showView('upload');
+    instantCloseModalPanel(document.getElementById('settings-panel'));
+    syncModalBackdrop();
+    document.getElementById('upload-error').classList.add('hidden');
+    document.getElementById('results-section').classList.add('hidden');
+    const audioInput = document.getElementById('audio-input');
+    if (audioInput) {
+      audioInput.value = '';
+      handleAudioChange(audioInput);
+    }
+    syncUploadViewPanelVisibility();
+  }
+
+  // ── Settings (hub → Keys | Features) ──
+  function fillSettingsKeysForm() {
+    document.getElementById('s-anthropic').value = config.anthropic_api_key || '';
+    document.getElementById('s-fizzy-base').value = config.fizzy_base_url || '';
+    document.getElementById('s-fizzy-token').value = config.fizzy_token || '';
+  }
+
+  function setSettingsView(view) {
+    const panel = document.getElementById('settings-panel');
+    panel.dataset.settingsView = view;
+    document.getElementById('settings-view-hub').classList.toggle('hidden', view !== 'hub');
+    document.getElementById('settings-view-keys').classList.toggle('hidden', view !== 'keys');
+    document.getElementById('settings-view-features').classList.toggle('hidden', view !== 'features');
+    const titleEl = document.getElementById('settings-panel-title');
+    titleEl.textContent = view === 'hub' ? 'Settings' : view === 'keys' ? 'Keys' : 'Features';
+    document.getElementById('settings-footer-keys').classList.toggle('hidden', view !== 'keys');
+    document.getElementById('settings-footer-features').classList.toggle('hidden', view !== 'features');
+  }
+
+  function openSettingsSubpanel(view) {
+    if (view === 'keys') fillSettingsKeysForm();
+    if (view === 'features') renderFeatureRows();
+    setSettingsView(view);
+  }
+
+  function settingsGoBack() {
+    setSettingsView('hub');
+  }
+
+  function openSettings() {
+    setSettingsView('hub');
+    document.getElementById('settings-panel').classList.add('modal-panel--open');
+    syncModalBackdrop();
+    syncUploadViewPanelVisibility();
+  }
+
+  function closeSettings() {
+    document.getElementById('settings-panel').classList.remove('modal-panel--open');
+    setSettingsView('hub');
+    syncModalBackdrop();
+    syncUploadViewPanelVisibility();
+  }
+
+  function featureRowIsEmpty(f) {
+    if (!f) return true;
+    return !String(f.name || '').trim() && !String(f.assignee_name || '').trim() && !String(f.assignee_id || '').trim() && !String(f.board_id || '').trim();
+  }
+
+  function onlyOneEmptyFeatureRow() {
+    const features = config.features || [];
+    return features.length === 1 && featureRowIsEmpty(features[0]);
+  }
+
+  function updateFeatureRowDeleteButtons() {
+    const list = document.getElementById('features-list');
+    if (!list) return;
+    const locked = onlyOneEmptyFeatureRow();
+    const title = locked ? 'Add another feature or fill a field before removing' : 'Remove';
+    list.querySelectorAll('.feature-row .feature-select-icon-btn').forEach(btn => {
+      btn.disabled = locked;
+      btn.title = title;
+    });
+  }
+
+  function renderFeatureRows() {
+    const list = document.getElementById('features-list');
+    const features = config.features || [];
+    list.innerHTML = '';
+    const locked = onlyOneEmptyFeatureRow();
+    const delTitle = locked ? 'Add another feature or fill a field before removing' : 'Remove';
+
+    features.forEach((f, i) => {
+      const row = document.createElement('div');
+      row.className = 'feature-row';
+      row.innerHTML = `
+        <div class="feature-select-field feature-select-field--panel">
+          <input type="text" class="feature-select-field__input" placeholder="Feature name" value="${escHtml(f.name || '')}" oninput="config.features[${i}].name = this.value; updateFeatureRowDeleteButtons()">
+        </div>
+        <div class="feature-select-field feature-select-field--panel">
+          <input type="text" class="feature-select-field__input" placeholder="Assignee name" value="${escHtml(f.assignee_name || '')}" oninput="config.features[${i}].assignee_name = this.value; updateFeatureRowDeleteButtons()">
+        </div>
+        <div class="feature-select-field feature-select-field--panel">
+          <input type="text" class="feature-select-field__input" placeholder="Fizzy user ID" value="${escHtml(f.assignee_id || '')}" oninput="config.features[${i}].assignee_id = this.value; updateFeatureRowDeleteButtons()">
+        </div>
+        <div class="feature-select-field feature-select-field--panel">
+          <input type="text" class="feature-select-field__input" placeholder="Board ID" value="${escHtml(f.board_id || '')}" oninput="config.features[${i}].board_id = this.value; updateFeatureRowDeleteButtons()">
+        </div>
+        <button type="button" class="feature-select-icon-btn" onclick="removeFeatureRow(${i})" title="${delTitle}" aria-label="Remove"${locked ? ' disabled' : ''}><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+      `;
+      list.appendChild(row);
+    });
+  }
+
+  function addFeatureRow() {
+    if (!config.features) config.features = [];
+    config.features.push({ name: '', assignee_name: '', assignee_id: '', board_id: '' });
+    renderFeatureRows();
+  }
+
+  function removeFeatureRow(i) {
+    if (onlyOneEmptyFeatureRow()) return;
+    config.features.splice(i, 1);
+    renderFeatureRows();
+  }
+
+  async function saveSettings() {
+    config.anthropic_api_key = document.getElementById('s-anthropic').value.trim();
+    config.fizzy_base_url = document.getElementById('s-fizzy-base').value.trim();
+    config.fizzy_token = document.getElementById('s-fizzy-token').value.trim();
+
+    await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config)
+    });
+    closeSettings();
+    populateFeatureSelect();
+  }
+
+  async function saveFeaturesAssignees() {
+    await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config)
+    });
+    closeSettings();
+    populateFeatureSelect();
+  }
+
+  // ── Lightbox ──
+  function openLightbox(src) {
+    document.getElementById('lightbox-img').src = src;
+    document.getElementById('lightbox').classList.remove('hidden');
+  }
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.add('hidden');
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeLightbox();
+      const settingsPanel = document.getElementById('settings-panel');
+      if (!settingsPanel || !settingsPanel.classList.contains('modal-panel--open')) return;
+      e.preventDefault();
+      const sub = settingsPanel.dataset.settingsView || 'hub';
+      if (sub !== 'hub') setSettingsView('hub');
+      else closeSettings();
+    }
+  });
+
+  // ── Util ──
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  init();
+</script>
+</body>
+</html>

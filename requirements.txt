@@ -1,0 +1,6 @@
+flask
+anthropic
+numpy<2
+openai-whisper
+requests
+werkzeug
